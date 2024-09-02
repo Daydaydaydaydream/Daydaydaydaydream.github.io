@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Hello CMake当工程包含的源文件不多时我们可以直接使用 gcc 命令来编译项目，但是当源文件多且复杂的时候使用 gcc 命令去编译会很容易混乱且工作量巨大。make 是一种构建工具，此时我们可以通过 Makefile 这种脚本文件使用 make 工具进行批量编译和链接。Makefile 在一些简单的工程可以人工手写，但是在需要跨平台编译或者项目的繁杂的情况下也显得有些复杂。CMake 可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hello CMake">
+<meta property="og:url" content="http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="FJZ Blog">
+<meta property="og:description" content="Hello CMake当工程包含的源文件不多时我们可以直接使用 gcc 命令来编译项目，但是当源文件多且复杂的时候使用 gcc 命令去编译会很容易混乱且工作量巨大。make 是一种构建工具，此时我们可以通过 Makefile 这种脚本文件使用 make 工具进行批量编译和链接。Makefile 在一些简单的工程可以人工手写，但是在需要跨平台编译或者项目的繁杂的情况下也显得有些复杂。CMake 可">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-09-01T13:45:14.000Z">
+<meta property="article:modified_time" content="2024-09-02T13:39:56.020Z">
+<meta property="article:author" content="FengJingZhe">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Hello CMake</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">项目</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/08/24/C++%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&text=Hello CMake"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&is_video=false&description=Hello CMake"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Hello CMake&body=Check out this article: http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&name=Hello CMake&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&t=Hello CMake"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello-CMake"><span class="toc-number">1.</span> <span class="toc-text">Hello CMake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add-executable"><span class="toc-number">2.</span> <span class="toc-text">add_executable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-number">3.</span> <span class="toc-text">set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CMake-%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F"><span class="toc-number">4.</span> <span class="toc-text">CMake 内置变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93"><span class="toc-number">5.</span> <span class="toc-text">静态&#x2F;动态链接库</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Hello CMake
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">FengJingZhe</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-09-01T13:45:14.000Z" class="dt-published" itemprop="datePublished">2024-09-01</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p><a name="fcFlH"></a></p>
+<h2 id="Hello-CMake"><a href="#Hello-CMake" class="headerlink" title="Hello CMake"></a>Hello CMake</h2><p>当工程包含的源文件不多时我们可以直接使用 gcc 命令来编译项目，但是当源文件多且复杂的时候使用 gcc 命令去编译会很容易混乱且工作量巨大。<br />make 是一种构建工具，此时我们可以通过 Makefile 这种脚本文件使用 make 工具进行批量编译和链接。<br />Makefile 在一些简单的工程可以人工手写，但是在需要跨平台编译或者项目的繁杂的情况下也显得有些复杂。CMake 可以更加简洁的方式生成 Makefile ，同时可以跨平台使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A /</span><br><span class="line">|-- CMakelists.txt</span><br><span class="line">|-- main.cpp    </span><br></pre></td></tr></table></figure>
+<pre><code>执行 CMake 命令会产生很多编译中间态文件 例如 .o 文件等 &lt;br /&gt;所以我们会新建一个build文件夹方便管理。
+</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake ..</span><br><span class="line">make -j8 //8线程编译</span><br></pre></td></tr></table></figure>
+<p><a name="CVQac"></a></p>
+<h2 id="add-executable"><a href="#add-executable" class="headerlink" title="add_executable"></a>add_executable</h2><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(HelloWorld)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main main.cpp info.cpp)</span><br></pre></td></tr></table></figure>
+
+<p>这个 cmakelist.txt 中 cmake_minimum_required(VERSION 3.0) 指的是 CMake 的版本最低需要3.0，project(HelloWorld)  是项目名称（不知道是不是可以理解为定义了一个项目类）。<br />add_executable(main main.cpp info.cpp) 将参数中的源代码文件 main.cpp 和 info.cpp 编译、链接生成可执行文件 main<br />最后在终端中执行下面的bash即可</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake ..</span><br><span class="line">make -j8 //8线程编译</span><br><span class="line">./main</span><br></pre></td></tr></table></figure>
+<p><a name="G18Nl"></a></p>
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a>set</h2><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(HelloWorld)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(CODE_LIST info1.cpp info2.cpp info3.cpp main.cpp)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;CODE_LIST&#125;</span>)</span><br></pre></td></tr></table></figure>
+<p>可以使用set函数将一些需要链接的源码文件打包，这样后续使用 add_executable 时可以更加方便明了。<br><a name="M5vr8"></a></p>
+<h2 id="CMake-内置变量"><a href="#CMake-内置变量" class="headerlink" title="CMake 内置变量"></a>CMake 内置变量</h2><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PROJECT_SOURCE_DIR	        使用 cmake 命令后紧跟的目录，一般是工程的根目录</span><br><span class="line">PROJECT_BINARY_DIR	        执行 cmake 命令的目录</span><br><span class="line">CMAKE_CURRENT_SOURCE_DIR	  当前处理的 CMakeLists.txt 所在的路径</span><br><span class="line">CMAKE_CURRENT_BINARY_DIR	  <span class="keyword">target</span> 编译目录</span><br><span class="line">EXECUTABLE_OUTPUT_PATH	    重新定义目标二进制可执行文件的存放位置</span><br><span class="line">LIBRARY_OUTPUT_PATH	        重新定义目标链接库文件的存放位置</span><br><span class="line">PROJECT_NAME	              返回通过 <span class="keyword">PROJECT</span> 指令定义的项目名称</span><br><span class="line">CMAKE_BINARY_DIR	          项目实际构建路径，假设在 build 目录进行的构建，那么得到的就是这个目录的路径</span><br></pre></td></tr></table></figure>
+<p>如果不确定这些内置变量的内容，可以使用message函数打印出来看看。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message</span>(STATUS, <span class="string">&quot;======= $&#123;PROJECT_SOURCE_DIR&#125;&quot;</span>)</span><br><span class="line"><span class="keyword">message</span>(STATUS, <span class="string">&quot;======= $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p><a name="IBcKF"></a></p>
+<h2 id="静态-动态链接库"><a href="#静态-动态链接库" class="headerlink" title="静态&#x2F;动态链接库"></a>静态&#x2F;动态链接库</h2><p>静态链接库(.LIB) 由函数和数据编译而成的一个二进制文件。使用时，在编译链接阶段，由链接器从库中复制这些函数和数据，并把他们与应用程序的其他模块组合起来创建最终的可执行文件。由于静态链接库中的程序和数据已经被复制并应用到可执行文件中，因此发布产品时不需要发布使用的静态库文件。<br />动态链接库 (.DLL) 包含被可执行程序或其他 DLL 调用来完成某项工作的函数，不可以直接运行，也不可以接收消息。动态链接库一半包含两个文件，引入库文件（.LIB）和动态链接库文件（.DLL）。使用时，在编译链接阶段，只需要链接引入库文件，动态链接库中的函数和数据并不复制到程序中，在运行阶段去访问DLL文件中的函数。由于动态链接库中函数和数据并没有被复制，因此发布产品时，必须包含动态链接库文件。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 源文件</span></span><br><span class="line"><span class="keyword">aux_source_directory</span>(<span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/src SRC_LIST)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 制作静态库</span></span><br><span class="line"><span class="comment"># add_library(info STATIC $&#123;SRC_LIST&#125;)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 制作动态库</span></span><br><span class="line"><span class="keyword">add_library</span>(info SHARED <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#设置生成的库放到 build/lib 目录下</span></span><br><span class="line"><span class="keyword">set</span>(LIBRARY_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/build/lib)</span><br></pre></td></tr></table></figure>
+<p>如何将生成的头文件和动态&#x2F;静态链接库一键导出供用户使用呢？将下述命令加入到上述命令中，并执行 “make install” 替换之前的 “make” 命令。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(EXPORT_DIR <span class="variable">$&#123;CMAKE_BINARY_DIR&#125;</span>/<span class="keyword">export</span>)                                <span class="comment"># 设置导出路径</span></span><br><span class="line"><span class="keyword">install</span>(TARGETS info LIBRARY DESTINATION <span class="variable">$&#123;EXPORT_DIR&#125;</span>)                   <span class="comment"># 导出 info 库到 build/export</span></span><br><span class="line"><span class="keyword">install</span>(DIRECTORY <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/inc DESTINATION <span class="variable">$&#123;EXPORT_DIR&#125;</span>/)   <span class="comment"># 将头文件导出到 build/export/</span></span><br></pre></td></tr></table></figure>
+
+<p>toFinish……</p>
+<p>参考<br /><a target="_blank" rel="noopener" href="https://github.com/muyuuuu/CMakeGuide">GitHub - muyuuuu&#x2F;CMakeGuide: 一个简短的、带示例的 CMake 入门教程</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">项目</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello-CMake"><span class="toc-number">1.</span> <span class="toc-text">Hello CMake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add-executable"><span class="toc-number">2.</span> <span class="toc-text">add_executable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-number">3.</span> <span class="toc-text">set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CMake-%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F"><span class="toc-number">4.</span> <span class="toc-text">CMake 内置变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93"><span class="toc-number">5.</span> <span class="toc-text">静态&#x2F;动态链接库</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&text=Hello CMake"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&is_video=false&description=Hello CMake"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Hello CMake&body=Check out this article: http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&title=Hello CMake"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&name=Hello CMake&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/09/01/CMake%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/&t=Hello CMake"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    FengJingZhe
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">项目</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
